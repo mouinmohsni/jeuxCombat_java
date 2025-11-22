@@ -21,44 +21,58 @@ public class CombatPanel extends JPanel {
     // Composants pour le joueur
     private JLabel playerNameLabel;
     private JProgressBar playerHealthBar;
+    private JLabel playerImageLabel;
 
     // Composants pour l'ennemi
     private JLabel enemyNameLabel;
     private JProgressBar enemyHealthBar;
+    private JLabel enemyImageLabel;
 
     // Boutons d'action
     private JButton attackButton;
     private JButton defendButton;
     private JButton itemButton;
-    private JLabel playerImageLabel;
-    private JLabel enemyImageLabel;
 
     public CombatPanel(GameController controller) {
         this.controller = controller;
         setLayout(new BorderLayout(10, 10)); // Layout principal
 
-        // --- Panneau de l'Ennemi (en haut) ---
+        // --- Panneau CENTRAL : Les images des personnages ---
+        JPanel centerPanel = new JPanel(new BorderLayout());
+
+        // Image du joueur à gauche
+        playerImageLabel = new JLabel("", SwingConstants.CENTER);
+        playerImageLabel.setPreferredSize(new Dimension(200, 300)); // Taille fixe pour l'image
+        centerPanel.add(playerImageLabel, BorderLayout.WEST);
+
+        // Image de l'ennemi à droite
+        enemyImageLabel = new JLabel("", SwingConstants.CENTER);
+        enemyImageLabel.setPreferredSize(new Dimension(200, 300)); // Taille fixe pour l'image
+        centerPanel.add(enemyImageLabel, BorderLayout.EAST);
+
+        add(centerPanel, BorderLayout.CENTER);
+
+        // --- Panneau de l'Ennemi (en haut) : Nom + Barre de vie ---
         JPanel enemyPanel = new JPanel(new GridLayout(2, 1));
         enemyNameLabel = new JLabel("Ennemi", SwingConstants.CENTER);
+        enemyNameLabel.setFont(new Font("Serif", Font.BOLD, 18));
         enemyHealthBar = new JProgressBar();
+        enemyHealthBar.setForeground(Color.RED);
         enemyPanel.add(enemyNameLabel);
         enemyPanel.add(enemyHealthBar);
         add(enemyPanel, BorderLayout.NORTH);
-        playerImageLabel = new JLabel();
-        enemyImageLabel = new JLabel();
 
-        add(playerImageLabel, BorderLayout.WEST);
-        add(enemyImageLabel, BorderLayout.EAST);
-
-        // --- Panneau du Joueur (en bas) ---
+        // --- Panneau du Joueur (en bas) : Nom + Barre de vie ---
         JPanel playerPanel = new JPanel(new GridLayout(2, 1));
         playerNameLabel = new JLabel("Joueur", SwingConstants.CENTER);
+        playerNameLabel.setFont(new Font("Serif", Font.BOLD, 18));
         playerHealthBar = new JProgressBar();
+        playerHealthBar.setForeground(Color.GREEN);
         playerPanel.add(playerNameLabel);
         playerPanel.add(playerHealthBar);
         add(playerPanel, BorderLayout.SOUTH);
 
-        // --- Panneau des Actions (à droite) ---
+        // --- Panneau des Actions (à droite) : Les boutons ---
         JPanel actionPanel = new JPanel(new GridLayout(3, 1, 5, 5));
         attackButton = new JButton("Attaquer");
         defendButton = new JButton("Défendre");
@@ -68,10 +82,8 @@ public class CombatPanel extends JPanel {
         actionPanel.add(itemButton);
         add(actionPanel, BorderLayout.EAST);
 
-
         // --- Connexion des boutons aux actions ---
         attackButton.addActionListener(e -> {
-            // On utilise les versions "effectives" pour prendre en compte les bonus/malus
             AttackCommand command = new AttackCommand(
                     controller.getEffectivePlayer(),
                     controller.getEffectiveEnemy()
@@ -95,11 +107,9 @@ public class CombatPanel extends JPanel {
             }
 
             if (itemToUse != null) {
-                // Si on a trouvé une potion, on crée et exécute la commande.
                 UseItemCommand command = new UseItemCommand(controller.getPlayer(), itemToUse, controller);
                 controller.executePlayerCommand(command);
             } else {
-                // Sinon, on informe le joueur.
                 JOptionPane.showMessageDialog(this, "Vous n'avez pas de Potion de Force !");
             }
         });
@@ -107,16 +117,8 @@ public class CombatPanel extends JPanel {
 
     /**
      * Met à jour tous les composants graphiques avec les données actuelles du jeu.
-     * C'est le cœur du rafraîchissement de la vue.
      */
     public void updateView() {
-
-        new ImageIcon("../images/foret.jpg");
-
-
-
-
-
         // Mettre à jour les infos du joueur
         Character player = controller.getPlayer();
         playerNameLabel.setText(player.getName());
@@ -125,9 +127,12 @@ public class CombatPanel extends JPanel {
         playerHealthBar.setString(player.getHealth() + " / " + player.getMaxHealth());
         playerHealthBar.setStringPainted(true);
 
-        // Mettre à jour les images
+        // Mettre à jour l'image du joueur
         if (player.getImagePath() != null) {
-            playerImageLabel.setIcon(new ImageIcon(player.getImagePath()));
+            ImageIcon icon = new ImageIcon(player.getImagePath());
+            // Redimensionner l'image pour qu'elle s'adapte bien
+            Image img = icon.getImage().getScaledInstance(180, 280, Image.SCALE_SMOOTH);
+            playerImageLabel.setIcon(new ImageIcon(img));
         }
 
         // Mettre à jour les infos de l'ennemi
@@ -138,14 +143,14 @@ public class CombatPanel extends JPanel {
             enemyHealthBar.setValue(enemy.getHealth());
             enemyHealthBar.setString(enemy.getHealth() + " / " + enemy.getMaxHealth());
             enemyHealthBar.setStringPainted(true);
-            enemyImageLabel.setIcon(new ImageIcon(enemy.getImagePath()));
-        }
-//        if (enemy != null && enemy.getImagePath() != null) {
-//            enemyImageLabel.setIcon(new ImageIcon(enemy.getImagePath()));
-//            System.out.println("path" + enemy.getImagePath());
-//        }else{
-//            System.out.println("Erreur des ennemi image path :" + enemy.getImagePath());
-//        }
 
+            // Mettre à jour l'image de l'ennemi
+            if (enemy.getImagePath() != null) {
+                ImageIcon icon = new ImageIcon(enemy.getImagePath());
+                // Redimensionner l'image pour qu'elle s'adapte bien
+                Image img = icon.getImage().getScaledInstance(180, 280, Image.SCALE_SMOOTH);
+                enemyImageLabel.setIcon(new ImageIcon(img));
+            }
+        }
     }
 }
